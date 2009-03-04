@@ -34,7 +34,5 @@
 	$xml_return = $foo->getFavorites();
 	
 	$xml_return = $foo->getUser("nops");
-	
-	echo "<pre>"; print_r($xml_return); echo "</pre>"; 
 
 ?>
