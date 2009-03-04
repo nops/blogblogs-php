@@ -23,7 +23,7 @@
  * Newest release Mar 04 2009
  *
  */
- 
+
 class BlogBlogs {
 	/* Username format string */
 	private $username;
@@ -40,13 +40,29 @@ class BlogBlogs {
 	/* Set this to not return a call with errors */
 	public $return_error = true;
 	
-	/* Class Constructor */
+	/**
+	 *  Class Constructor 
+	 * 
+	 * @author Arthur <nops>
+	 * @since Mar 04 2009
+	 * 
+	 * @access public
+	 * @param username string
+	 * @param api_key string
+	 * @return NULL
+	 **/
 	function BlogBlogs( $username , $apikey ) {
 		$this->username = sprintf( "%s" , $username );
 		$this->apikey 	= sprintf( "%s" , $apikey );
 	}
 	
-	/* Function to return XML of yours favorites */
+	/**
+	 *  Function to return XML of yours favorites 
+	 * 
+	 * @access public
+	 * @param none
+	 * @return xml
+	 **/
 	function getFavorites()
 	{
 		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/favorites" );
@@ -54,7 +70,13 @@ class BlogBlogs {
 		return $this->APICall( $api_call , true );
 	}
 	
-	/* Function to return XML of yours bookmarks */
+	/**
+	 *  Function to return XML of yours bookmarks
+	 * 
+	 * @access public
+	 * @param none
+	 * @return xml 
+	 **/
 	function getBookmarks()
 	{
 		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/bookmarks" );
@@ -62,10 +84,16 @@ class BlogBlogs {
 		return $this->APICall( $api_call , true );
 	}
 	
-	/* Function to return XML of users */
+	/**
+	 *  Function to return XML of users
+	 * 
+	 * @access public
+	 * @param username string
+	 * @return xml
+	 **/
 	function getUser( $user = NULL )
 	{
-		if($user === NULL)
+		if( $user == NULL )
 			$user = $this->username;
 			
 		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/userinfo?username=%s" , $user );
@@ -73,10 +101,16 @@ class BlogBlogs {
 		return $this->APICall( $api_call , true, false );
 	}
 	
-	/* Function to return XML of blogs */
+	/**
+	 *  Function to return XML of blogs
+	 * 
+	 * @access public
+	 * @param blog_url string
+	 * @return xml
+	 **/
 	function getBlog( $blog = NULL )
 	{
-		if($blog === NULL)
+		if( $blog == NULL )
 			return "Invalid Blog URL";
 			
 		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/bloginfo?url=%s" , $blog );
@@ -84,7 +118,57 @@ class BlogBlogs {
 		return $this->APICall( $api_call , true, false );
 	}
 	
-	/* Call the url of API */
+	/**
+	 *  Function to get all blogs from a user
+	 * 
+	 * @access public
+	 * @param username string
+	 * @return Array
+	 **/
+	function getUserBlogs( $user = NULL )
+	{
+		$is_true = $this->return_error;
+		$return = false;
+		$array = array();
+		
+		if( $user == NULL )
+			$user = $this->username;
+			
+		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/userinfo?username=%s" , $user );
+		
+		$this->return_error = false;
+		$xml = $this->APICall( $api_call , true , false );
+		
+		if($xml) {
+			
+			try {
+				$xml = @new SimpleXMLElement( $xml );
+			} catch (Exception $e) { 
+				return false;
+			} 
+			
+			foreach ( $xml->document->item as $item ) {
+				foreach ( $item->weblog[0] as $param )
+					$dados[ $param->getName() ] = (string)$param;
+				array_push( $array , $dados );
+			}
+			
+			$return = $array;
+		}
+		
+		$this->return_error = $is_true;
+		return $return;
+	}
+	
+	/**
+	 *  Call the url of API 
+	 * 
+	 * @access private
+	 * @param api_url string
+	 * @param http_post boolean
+	 * @param is_private boolean
+	 * @return mixed
+	 **/
 	private function APICall( $api_url , $http_post = false, $is_private = true ) {
 		$curl_handle = curl_init();
 		
@@ -108,23 +192,34 @@ class BlogBlogs {
     	if( ! $this->return_error ) {
     		$xml = new SimpleXMLElement( $return_data );
     		if( $xml->document->error == "" )
-    			return false;
-    		else 
     			return $return_data;
+    		else 
+    			return false;
     		
     	} else {
     		return $return_data;
     	}
 	}
 	
-	/* Return HTTP Status of last call */
+	/**
+	 *  Return HTTP Status of last call 
+	 * 
+	 * @access public
+	 * @return string
+	 **/
 	function lastStatusCode() {
 		return $this->http_status;
 	}
 	
-	/* Return last API call */
+	/**
+	 *  Return last API call 
+	 * 
+	 * @access public
+	 * @return string
+	 **/
 	function lastAPICall() {
 		return $this->last_api_call;
 	}
+
 }
 ?>
