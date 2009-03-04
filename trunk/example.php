@@ -33,6 +33,6 @@
 	
 	$xml_return = $foo->getFavorites();
 	
-	$xml_return = $foo->getUser("nops");
+	$xml_return = $foo->getUser("username");
 
 ?>
