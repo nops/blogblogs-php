@@ -24,10 +24,17 @@
  *
  */
 
+	/* INCLUDE THE CLASS */
+	require_once("blogblogs.php");
+
  	/* USES EXAMPLE */
  
 	$foo = new BlogBlogs("your-username","your-api-key");
 	
 	$xml_return = $foo->getFavorites();
+	
+	$xml_return = $foo->getUser("nops");
+	
+	echo "<pre>"; print_r($xml_return); echo "</pre>"; 
 
 ?>

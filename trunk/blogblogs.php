@@ -37,32 +37,84 @@ class BlogBlogs {
 	/* Contains the last API call */
 	private $last_api_call;
 	
+	/* Set this to not return a call with errors */
+	public $return_error = true;
+	
 	/* Class Constructor */
-	function BlogBlogs($username, $apikey) {
-		$this->username = sprintf("%s", $username);
-		$this->apikey = sprintf("%s", $apikey);
+	function BlogBlogs( $username , $apikey ) {
+		$this->username = sprintf( "%s" , $username );
+		$this->apikey 	= sprintf( "%s" , $apikey );
 	}
 	
+	/* Function to return XML of yours favorites */
 	function getFavorites()
 	{
-		$api_call = sprintf("http://api.blogblogs.com.br/api/rest/favorites");
-		return $this->APICall($api_call, true);
+		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/favorites" );
+		
+		return $this->APICall( $api_call , true );
+	}
+	
+	/* Function to return XML of yours bookmarks */
+	function getBookmarks()
+	{
+		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/bookmarks" );
+		
+		return $this->APICall( $api_call , true );
+	}
+	
+	/* Function to return XML of users */
+	function getUser( $user = NULL )
+	{
+		if($user === NULL)
+			$user = $this->username;
+			
+		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/userinfo?username=%s" , $user );
+		
+		return $this->APICall( $api_call , true, false );
+	}
+	
+	/* Function to return XML of blogs */
+	function getBlog( $blog = NULL )
+	{
+		if($blog === NULL)
+			return "Invalid Blog URL";
+			
+		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/bloginfo?url=%s" , $blog );
+		
+		return $this->APICall( $api_call , true, false );
 	}
 	
 	/* Call the url of API */
-	private function APICall($api_url, $http_post = false) {
+	private function APICall( $api_url , $http_post = false, $is_private = true ) {
 		$curl_handle = curl_init();
-		$api_url .= sprintf("?key=%s&username=%s", $this->apikey, $this->username);
-		curl_setopt($curl_handle, CURLOPT_URL, $api_url);
-    	if ($http_post) {
-    		curl_setopt($curl_handle, CURLOPT_POST, true);
-    	}
-    	curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, TRUE);
-    	$return_data = curl_exec($curl_handle);
-    	$this->http_status = curl_getinfo($curl_handle, CURLINFO_HTTP_CODE);
+		
+		if( $is_private )
+			$api_url .= sprintf( "?key=%s&username=%s" , $this->apikey , $this->username );
+		else
+			$api_url .= sprintf( "&key=%s" , $this->apikey );
+			
+		if ( $http_post )
+    		curl_setopt( $curl_handle , CURLOPT_POST , true );
+			
+		curl_setopt( $curl_handle , CURLOPT_URL , $api_url );    		
+    	curl_setopt( $curl_handle , CURLOPT_RETURNTRANSFER , TRUE );
+    	$return_data = curl_exec( $curl_handle );
+    	
+    	$this->http_status = curl_getinfo( $curl_handle , CURLINFO_HTTP_CODE );
     	$this->last_api_call = $api_url;
-    	curl_close($curl_handle);
-    	return $return_data;
+    	
+    	curl_close( $curl_handle );
+    	
+    	if( ! $this->return_error ) {
+    		$xml = new SimpleXMLElement( $return_data );
+    		if( $xml->document->error == "" )
+    			return false;
+    		else 
+    			return $return_data;
+    		
+    	} else {
+    		return $return_data;
+    	}
 	}
 	
 	/* Return HTTP Status of last call */
