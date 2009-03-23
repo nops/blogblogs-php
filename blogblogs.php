@@ -161,6 +161,19 @@ class BlogBlogs {
 	}
 	
 	/**
+	 * 
+	 */
+	function ping( $blog = NULL )
+	{
+		if( $blog == NULL)
+			return "Invalid Blog URL";
+			
+		$api_call = sprintf( "http://api.blogblogs.com.br/api/rest/ping?url=%s" , $blog );
+		
+		return $this->APICall( $api_call , true, false );
+	}
+	
+	/**
 	 *  Call the url of API 
 	 * 
 	 * @access private
